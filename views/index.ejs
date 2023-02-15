@@ -8,10 +8,15 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
 </head>
 <body>
+    <div class="text-center" style="margin-top: 10px;">
+        <a href="http://localhost:3000/">
+            <button >Do You Want Bulk Email Verification?</button>
+          </a>
+     </div>
 <div class="container">
-    <h1 class="text-center">
+    <h2 class="text-center">
       Single Email Varifier
-    </h1>
+    </h2>
     <form action="/bulkemailchecker" method="post">
         <div class="form-group" style="width: 300px; margin-left: 420px;">
             <label for="emails">Enter Email Here</label>
@@ -19,7 +24,7 @@
         </div>
     
         <div class="form-group" style="width: 300px; margin-left: 420px;">
-            <button id="button" class="btn btn-block btn-primary">Verify Emails</button>
+            <button id="button" class="btn btn-block btn-primary">Verify Email</button>
         </div>
     </form>
     <%if(info){%>
