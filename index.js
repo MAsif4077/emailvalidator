@@ -19,7 +19,7 @@ app.get('/single', (req, res) => {
 app.post('/bulkemailchecker',emailController.validateEmail)
 app.post('/bulkEmailValidate',emailController.validateBulk);
 
-let port = process.env.PORT || 5000;
+let port = process.env.PORT || 3000;
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
