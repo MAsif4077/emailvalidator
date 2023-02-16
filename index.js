@@ -16,8 +16,8 @@ app.get('/', (req, res)=> {
 app.get('/single', (req, res) => {
     res.render('index',{info:''});
 })
-app.post('/bulkemailchecker',emailController.validateEmail)
-app.post('/bulkEmailValidate',emailController.validateBulk);
+app.post('/verifySingle',emailController.validateEmail);
+app.post('/verifybulk',emailController.verifyEmails);
 
 let port = process.env.PORT || 3000;
 

@@ -32,76 +32,63 @@ module.exports = {
       res.status(500).send("Error: " + err);
     }
   },
-
-  validateBulk: async function(req, res) {
-    try {
-      const email = req.body.emails;
-
-      var lines = email.split(/\n/);
-      console.log("lines ", lines);
-
-      var output = [];
-      for (var i = 0; i < lines.length; i++) {
-        if (/\S/.test(lines[i])) {
-          output.push(lines[i].trim());
-        }
-      }
-      console.log("output", output);
-      var emails = output;
-      if (!Array.isArray(emails)) {
-        res.status(500).send("Error: Email input should be an array.");
-      } else {
-        var validEmails = [];
-        var invalidEmails = [];
-        var acceptAllEmails = [];
-        var pendingVerification = [];
-        var promises = [];
-        for (const email of emails) {
-          var domain = email.split('@')[1];
-          var emailAddress = `${randomstring.generate(10)}@${domain}`
-          // console.log("Domain", domain);
-          // console.log("emailAddress", emailAddress);
-          var promise = new Promise((resolve, reject) => {
-            emailVerify.verify(emailAddress, function(err, info) {
-              if (err) {
-                pendingVerification.push(email);
-                // console.log("Pending ",pendingVerification);
-              } else if (info.success) {
-                acceptAllEmails.push(email);
-                // console.log("Accept-All",acceptAllEmails)
-              } else {
-                emailVerify.verify(email, function(err, info) {
-                  if (info.success) {
-                    validEmails.push(email);
-                    //  console.log("Valid",validEmails)
-                  } else {
-                    invalidEmails.push(email);
-                    // console.log("Invalid ",invalidEmails)
-                  }
-                })
-              }
-              resolve();
-            })
+  verifyEmails: async function (req,res) {
+    const email = req.body.emails;
+    const lines = email.split(/\n/);
+    const output = lines.filter(line => /\S/.test(line)).map(line => line.trim());
+    
+    const validEmails = [];
+    const invalidEmails = [];
+    const acceptAllEmails = [];
+  
+    for (const email of output) {
+      const domain = email.split('@')[1];
+      const emailAddress = `${randomstring.generate(10)}@${domain}`;
+  
+      try {
+        const info = await new Promise((resolve, reject) => {
+          emailVerify.verify(emailAddress, (err, info) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(info);
+            }
           });
-          promises.push(promise);
-               console.log(promise);
-             }
-             Promise.all(promises).then(() => {
-              var data={
-               valid:validEmails,
-               invalid:invalidEmails,
-               acceptAll:acceptAllEmails,
-               pending:pendingVerification
+        });
+  
+        if (info.success) {
+          acceptAllEmails.push(email);
+        } else {
+          const info = await new Promise((resolve, reject) => {
+            emailVerify.verify(email, (err, info) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(info);
               }
-              console.log("data....",data);
-               res.render('bulkEmails',{title:'Bulk Domain Validator',text:data,flag:true});
-             });
-           }
-    }catch(err){
-        res.send(err);
+            });
+          });
+  
+          if (info.success) {
+            validEmails.push(email);
+          } else {
+            invalidEmails.push(email);
+          }
+        }
+      } catch (err) {
+        console.error(`Error verifying email ${email}: ${err}`);
+      }
     }
-       
+    var data={
+    valid:validEmails,
+    invalid:invalidEmails,
+    acceptall:acceptAllEmails
 
-    }
+  }
+    console.log("....",data);
+    res.render('bulkEmails',{title:'Bulk Domain Validator',text:data,flag:true});
+    
+  }
 
-    }
+
+}
